@@ -1,4 +1,4 @@
-# @peleke/langchain-qortex
+# @peleke.s/langchain-qortex
 
 LangChain.js VectorStore backed by [qortex](https://github.com/Peleke/qortex) knowledge graph. Graph-enhanced retrieval via MCP.
 
@@ -7,13 +7,13 @@ Drop-in replacement for MemoryVectorStore, Chroma, Pinecone, or any LangChain Ve
 ## Install
 
 ```bash
-npm install @peleke/langchain-qortex @langchain/core
+npm install @peleke.s/langchain-qortex @langchain/core
 ```
 
 ## Quick Start
 
 ```typescript
-import { QortexVectorStore } from "@peleke/langchain-qortex";
+import { QortexVectorStore } from "@peleke.s/langchain-qortex";
 import { OpenAIEmbeddings } from "@langchain/openai";
 
 // Create store with any LangChain embeddings
@@ -83,7 +83,7 @@ Extends `VectorStore` from `@langchain/core`.
 Wraps a qortex-style embedding model (`.embed(texts)`) in LangChain's `Embeddings` interface.
 
 ```typescript
-import { QortexEmbeddings } from "@peleke/langchain-qortex";
+import { QortexEmbeddings } from "@peleke.s/langchain-qortex";
 
 const embeddings = new QortexEmbeddings({ model: myQortexModel });
 ```
@@ -124,7 +124,7 @@ Text-level search (`similaritySearch`) uses qortex's full pipeline: embedding + 
 
 ## Comparison with Python Version
 
-| Feature | `langchain-qortex` (Python) | `@peleke/langchain-qortex` (TypeScript) |
+| Feature | `langchain-qortex` (Python) | `@peleke.s/langchain-qortex` (TypeScript) |
 |---------|----------------------------|----------------------------------------|
 | Transport | Direct (LocalQortexClient) | MCP (stdio subprocess) |
 | VectorStore | `langchain_core.vectorstores` | `@langchain/core/vectorstores` |

@@ -11,7 +11,7 @@
  * compatibility via qortex_vector_query.
  *
  * Usage:
- *   import { QortexVectorStore } from "@peleke/langchain-qortex";
+ *   import { QortexVectorStore } from "@peleke.s/langchain-qortex";
  *
  *   const store = await QortexVectorStore.fromTexts(
  *     texts, metadatas, embeddings, { indexName: "docs" }
