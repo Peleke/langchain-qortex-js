@@ -2,8 +2,8 @@
  * QortexVectorStore: LangChain.js VectorStore backed by qortex knowledge graph.
  *
  * Drop-in replacement for MemoryVectorStore, Chroma, Pinecone, or any
- * LangChain VectorStore. Same API. Same chains. Same retriever. Plus
- * graph structure, rules, and feedback-driven learning.
+ * LangChain VectorStore. Implements the full VectorStore interface and
+ * adds graph structure, rules, and feedback-driven learning.
  *
  * Text-level search (similaritySearch, similaritySearchWithScore) uses
  * qortex's full pipeline: embedding + graph PPR + rules. Vector-level

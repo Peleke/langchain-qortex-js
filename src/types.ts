@@ -2,7 +2,7 @@
  * Qortex-specific types for graph-enhanced vector store capabilities.
  *
  * These represent the graph structure that makes qortex different from
- * a plain vector store -- nodes, edges, rules, and feedback.
+ * a plain vector store: nodes, edges, rules, and feedback.
  */
 
 /** A node in the qortex knowledge graph. */
