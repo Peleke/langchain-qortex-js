@@ -1,6 +1,6 @@
 {
   "name": "@peleke.s/langchain-qortex",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "LangChain.js VectorStore backed by qortex knowledge graph — graph-enhanced retrieval via MCP",
   "type": "module",
   "main": "dist/index.js",

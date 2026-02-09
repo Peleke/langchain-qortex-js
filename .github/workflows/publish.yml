@@ -8,9 +8,10 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: npm
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/@peleke.s/langchain-qortex
     permissions:
-      contents: read
       id-token: write
 
     steps:
@@ -18,9 +19,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-          registry-url: https://registry.npmjs.org
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
 
       - run: npm ci
 
@@ -34,4 +34,4 @@ jobs:
         run: npx vitest run tests/vectorstore.test.ts tests/dogfood.test.ts
 
       - name: Publish
-        run: npm publish --access public --provenance
+        run: npm publish --provenance --access public
