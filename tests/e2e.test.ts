@@ -45,9 +45,18 @@ describe("Real E2E: QortexVectorStore over stdio MCP", () => {
       domain: "e2e-test",
     });
     await store.connect();
+
+    // Create the index before tests run
+    await store.createIndex({ dimension: 4 });
   }, E2E_TIMEOUT);
 
   afterAll(async () => {
+    // Cleanup: delete index then disconnect
+    try {
+      await store.deleteIndex();
+    } catch {
+      // Index may already be deleted by a test
+    }
     await store.disconnect();
   });
 

@@ -72,6 +72,74 @@ describe("QortexVectorStore", () => {
   });
 
   // -----------------------------------------------------------------------
+  // Index management
+  // -----------------------------------------------------------------------
+
+  describe("createIndex", () => {
+    it("creates an index with dimension and metric", async () => {
+      callTool.mockResolvedValue(
+        mockResponse({ status: "created", index_name: "test-index" }),
+      );
+
+      await store.createIndex({ dimension: 384, metric: "cosine" });
+
+      expect(callTool).toHaveBeenCalledWith({
+        name: "qortex_vector_create_index",
+        arguments: { index_name: "test-index", dimension: 384, metric: "cosine" },
+      });
+    });
+
+    it("throws on error response", async () => {
+      callTool.mockResolvedValue(
+        mockResponse({ error: "Index already exists" }),
+      );
+
+      await expect(
+        store.createIndex({ dimension: 384 }),
+      ).rejects.toThrow("Index already exists");
+    });
+  });
+
+  describe("deleteIndex", () => {
+    it("deletes the configured index", async () => {
+      callTool.mockResolvedValue(
+        mockResponse({ status: "deleted" }),
+      );
+
+      await store.deleteIndex();
+
+      expect(callTool).toHaveBeenCalledWith({
+        name: "qortex_vector_delete_index",
+        arguments: { index_name: "test-index" },
+      });
+    });
+
+    it("deletes a named index", async () => {
+      callTool.mockResolvedValue(
+        mockResponse({ status: "deleted" }),
+      );
+
+      await store.deleteIndex({ indexName: "other" });
+
+      expect(callTool).toHaveBeenCalledWith({
+        name: "qortex_vector_delete_index",
+        arguments: { index_name: "other" },
+      });
+    });
+  });
+
+  describe("listIndexes", () => {
+    it("returns index names", async () => {
+      callTool.mockResolvedValue(
+        mockResponse({ indexes: ["docs", "code"] }),
+      );
+
+      const indexes = await store.listIndexes();
+      expect(indexes).toEqual(["docs", "code"]);
+    });
+  });
+
+  // -----------------------------------------------------------------------
   // addVectors
   // -----------------------------------------------------------------------
 
@@ -479,6 +547,86 @@ describe("QortexVectorStore", () => {
     it("creates a retriever with custom k", () => {
       const retriever = store.asRetriever(10);
       expect(retriever.k).toBe(10);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Static factory methods
+  // -----------------------------------------------------------------------
+
+  describe("fromTexts", () => {
+    it("creates store, connects, embeds, and adds documents", async () => {
+      const mock = createMockClient();
+      // fromTexts calls addDocuments which calls callTool
+      mock.callTool.mockResolvedValueOnce(
+        mockResponse({ ids: ["t-1", "t-2"] }),
+      );
+
+      const store = await QortexVectorStore.fromTexts(
+        ["hello world", "goodbye world"],
+        [{ src: "test" }, { src: "test" }],
+        embeddings,
+        { mcpClient: mock.client, indexName: "factory-test" },
+      );
+
+      expect(store._vectorstoreType()).toBe("qortex");
+      expect(mock.callTool).toHaveBeenCalledTimes(1);
+      expect(mock.callTool).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "qortex_vector_upsert",
+          arguments: expect.objectContaining({
+            index_name: "factory-test",
+          }),
+        }),
+      );
+    });
+
+    it("handles single metadata object applied to all texts", async () => {
+      const mock = createMockClient();
+      mock.callTool.mockResolvedValueOnce(
+        mockResponse({ ids: ["t-1", "t-2"] }),
+      );
+
+      await QortexVectorStore.fromTexts(
+        ["a", "b"],
+        { shared: true },
+        embeddings,
+        { mcpClient: mock.client },
+      );
+
+      // Both docs should get the same metadata
+      expect(mock.callTool).toHaveBeenCalledWith(
+        expect.objectContaining({
+          arguments: expect.objectContaining({
+            metadata: [
+              expect.objectContaining({ shared: true }),
+              expect.objectContaining({ shared: true }),
+            ],
+          }),
+        }),
+      );
+    });
+  });
+
+  describe("fromDocuments", () => {
+    it("creates store, connects, and adds documents", async () => {
+      const mock = createMockClient();
+      mock.callTool.mockResolvedValueOnce(
+        mockResponse({ ids: ["d-1"] }),
+      );
+
+      const docs = [
+        new Document({ pageContent: "test doc", metadata: { category: "test" } }),
+      ];
+
+      const store = await QortexVectorStore.fromDocuments(
+        docs,
+        embeddings,
+        { mcpClient: mock.client, indexName: "from-docs" },
+      );
+
+      expect(store._vectorstoreType()).toBe("qortex");
+      expect(mock.callTool).toHaveBeenCalledTimes(1);
     });
   });
 

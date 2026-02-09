@@ -2,8 +2,8 @@
  * QortexVectorStore: LangChain.js VectorStore backed by qortex knowledge graph.
  *
  * Drop-in replacement for MemoryVectorStore, Chroma, Pinecone, or any
- * LangChain VectorStore. Same API. Same chains. Same retriever. Plus
- * graph structure, rules, and feedback-driven learning.
+ * LangChain VectorStore. Implements the full VectorStore interface and
+ * adds graph structure, rules, and feedback-driven learning.
  *
  * Text-level search (similaritySearch, similaritySearchWithScore) uses
  * qortex's full pipeline: embedding + graph PPR + rules. Vector-level
@@ -11,7 +11,7 @@
  * compatibility via qortex_vector_query.
  *
  * Usage:
- *   import { QortexVectorStore } from "@peleke/langchain-qortex";
+ *   import { QortexVectorStore } from "@peleke.s/langchain-qortex";
  *
  *   const store = await QortexVectorStore.fromTexts(
  *     texts, metadatas, embeddings, { indexName: "docs" }
@@ -80,6 +80,47 @@ export class QortexVectorStore extends VectorStore {
   /** The query_id from the most recent text-level search. */
   get lastQueryId(): string | null {
     return this._lastQueryId;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Index management (MCP passthrough)
+  // ---------------------------------------------------------------------------
+
+  /** Create a vector index. Must be called before addVectors/addDocuments. */
+  async createIndex(params: {
+    indexName?: string;
+    dimension: number;
+    metric?: "cosine" | "euclidean" | "dotproduct";
+  }): Promise<void> {
+    const result = (await this.mcp.callTool("qortex_vector_create_index", {
+      index_name: params.indexName ?? this.indexName,
+      dimension: params.dimension,
+      metric: params.metric ?? "cosine",
+    })) as Record<string, unknown>;
+
+    if (result.error) {
+      throw new Error(result.error as string);
+    }
+  }
+
+  /** Delete a vector index. */
+  async deleteIndex(params?: { indexName?: string }): Promise<void> {
+    const result = (await this.mcp.callTool("qortex_vector_delete_index", {
+      index_name: params?.indexName ?? this.indexName,
+    })) as Record<string, unknown>;
+
+    if (result.error) {
+      throw new Error(result.error as string);
+    }
+  }
+
+  /** List all vector indexes. */
+  async listIndexes(): Promise<string[]> {
+    const result = (await this.mcp.callTool(
+      "qortex_vector_list_indexes",
+      {},
+    )) as { indexes: string[] };
+    return result.indexes;
   }
 
   // ---------------------------------------------------------------------------
