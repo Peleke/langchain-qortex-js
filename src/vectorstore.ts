@@ -83,6 +83,47 @@ export class QortexVectorStore extends VectorStore {
   }
 
   // ---------------------------------------------------------------------------
+  // Index management (MCP passthrough)
+  // ---------------------------------------------------------------------------
+
+  /** Create a vector index. Must be called before addVectors/addDocuments. */
+  async createIndex(params: {
+    indexName?: string;
+    dimension: number;
+    metric?: "cosine" | "euclidean" | "dotproduct";
+  }): Promise<void> {
+    const result = (await this.mcp.callTool("qortex_vector_create_index", {
+      index_name: params.indexName ?? this.indexName,
+      dimension: params.dimension,
+      metric: params.metric ?? "cosine",
+    })) as Record<string, unknown>;
+
+    if (result.error) {
+      throw new Error(result.error as string);
+    }
+  }
+
+  /** Delete a vector index. */
+  async deleteIndex(params?: { indexName?: string }): Promise<void> {
+    const result = (await this.mcp.callTool("qortex_vector_delete_index", {
+      index_name: params?.indexName ?? this.indexName,
+    })) as Record<string, unknown>;
+
+    if (result.error) {
+      throw new Error(result.error as string);
+    }
+  }
+
+  /** List all vector indexes. */
+  async listIndexes(): Promise<string[]> {
+    const result = (await this.mcp.callTool(
+      "qortex_vector_list_indexes",
+      {},
+    )) as { indexes: string[] };
+    return result.indexes;
+  }
+
+  // ---------------------------------------------------------------------------
   // Abstract method implementations (required by VectorStore)
   // ---------------------------------------------------------------------------
 
